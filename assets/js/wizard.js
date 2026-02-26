@@ -81,11 +81,28 @@
             setText('cmd-ping', getPingCmd(f, os, false));
             setText('cmd-ping6', getPingCmd(f, os, true));
 
-            // Trace
-            setText('cmd-trace', getTraceCmd(f, os, false));
-            setText('cmd-trace6', getTraceCmd(f, os, true));
+            // Trace - Correction: utiliser .main et .hint
+            const trace = getTraceCmd(f, os, false);
+            setText('cmd-trace', trace.main);
+            const traceHint = $('cmd-trace-hint');
+            if (trace.hint) {
+                traceHint.textContent = 'Commande alternative: ' + trace.hint;
+                traceHint.style.display = 'block';
+            } else {
+                traceHint.style.display = 'none';
+            }
 
-            // Service
+            const trace6 = getTraceCmd(f, os, true);
+            setText('cmd-trace6', trace6.main);
+            const trace6Hint = $('cmd-trace6-hint');
+            if (trace6.hint) {
+                trace6Hint.textContent = 'Commande alternative: ' + trace6.hint;
+                trace6Hint.style.display = 'block';
+            } else {
+                trace6Hint.style.display = 'none';
+            }
+
+            // Service - Correction: utiliser .main, .extra, .extraHint
             const svc = getServiceCmd(f, p, s, os, c);
             setText('cmd-svc', svc.main);
             
@@ -93,6 +110,15 @@
                 setText('cmd-svc-extra', svc.extra);
                 $('extra-test-block').style.display = 'block';
                 $('res-svc-extra').style.display = 'block';
+                
+                // Afficher le hint si présent
+                const svcExtraHint = $('cmd-svc-extra-hint');
+                if (svc.extraHint) {
+                    svcExtraHint.textContent = svc.extraHint;
+                    svcExtraHint.style.display = 'block';
+                } else {
+                    svcExtraHint.style.display = 'none';
+                }
             } else {
                 $('extra-test-block').style.display = 'none';
                 $('res-svc-extra').style.display = 'none';
