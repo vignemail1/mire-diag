@@ -1,180 +1,187 @@
 /**
  * wizard.js
- * Logique du wizard de diagnostic multi-etapes.
+ * Logique du wizard de diagnostic multi-étapes.
  */
 'use strict';
 
 (function () {
-  const state = {
-    currentStep: 0,
-    totalSteps: 6,
-    service: null,
-    os: null,
-    client: null,
-    fqdn: '',
-    port: '',
-    proxy: null,
-    proxyDetail: '',
-    errorMsg: ''
-  };
+    const state = {
+        currentStep: 0,
+        totalSteps: 6,
+        service: null,
+        os: null,
+        client: null,
+        fqdn: '',
+        port: '',
+        proxy: null,
+        proxyDetail: '',
+        errorMsg: ''
+    };
 
-  const STEP_COUNT = 6;
+    const STEP_COUNT = 6;
 
-  function $(id) { return document.getElementById(id); }
-  function setText(id, txt) { const el = $(id); if (el) el.textContent = txt; }
-  function setHTML(id, html) { const el = $(id); if (el) el.innerHTML = html; }
+    function $(id) { return document.getElementById(id); }
+    function setText(id, txt) { const el = $(id); if (el) el.textContent = txt; }
+    function setHTML(id, html) { const el = $(id); if (el) el.innerHTML = html; }
 
-  function goStep(n) {
-    if (n < 0 || n >= STEP_COUNT) return;
-    if (state.currentStep === 0 && n > 0) {
-      if (!state.service) { alert('Veuillez choisir un type de service.'); return; }
-      if (!state.os) { alert('Veuillez choisir votre systeme.'); return; }
-      if (!$('fqdn').value.trim()) { alert('Veuillez entrer l\'adresse du service.'); return; }
-    }
-    saveCurrentStep();
-    if (n > 0) updateCommands();
-    if (n === 5 && window.DiagReport) window.DiagReport.generate(state);
-    const current = document.querySelector('.step.active');
-    if (current) current.classList.remove('active');
-    const next = $('step-' + n);
-    if (next) next.classList.add('active');
-    state.currentStep = n;
-    updateProgressBar();
-    const wizard = $('wizard');
-    if (wizard) wizard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+    /**
+     * Change d'étape dans le wizard.
+     */
+    window.wizard = {
+        goStep: function (n) {
+            if (n < 0 || n >= STEP_COUNT) return;
 
-  function saveCurrentStep() {
-    state.fqdn        = ($('fqdn')         || {}).value || state.fqdn;
-    state.port        = ($('port')         || {}).value || state.port;
-    state.proxyDetail = ($('proxy-detail') || {}).value || state.proxyDetail;
-    state.errorMsg    = ($('error-msg')    || {}).value || state.errorMsg;
-  }
+            // Validation simple étape 1
+            if (state.currentStep === 0 && n > 0) {
+                if (!state.service) { alert('Veuillez choisir un type de service.'); return; }
+                if (!state.os) { alert('Veuillez choisir votre système.'); return; }
+                if (!$('fqdn').value.trim()) { alert('Veuillez entrer l\'adresse du service.'); return; }
+            }
 
-  function updateProgressBar() {
-    const bar = $('progress-bar');
-    if (!bar) return;
-    const pct = Math.round((state.currentStep / (STEP_COUNT - 1)) * 100);
-    bar.style.width = pct + '%';
-  }
+            // Mise à jour de l'état avant de changer
+            this.saveCurrentStep();
 
-  function restart() {
-    state.currentStep = 0;
-    state.service = null; state.os = null; state.client = null;
-    state.fqdn = ''; state.port = ''; state.proxy = null;
-    state.proxyDetail = ''; state.errorMsg = '';
-    // Vider tous les champs de resultat (IPv4, IPv6, extra)
-    [
-      'res-dns', 'res-dns6',
-      'res-ping', 'res-ping6',
-      'res-trace', 'res-trace6',
-      'res-svc', 'res-svc-extra',
-      'error-msg', 'proxy-detail'
-    ].forEach(id => {
-      if ($(id)) $(id).value = '';
-    });
-    ['fqdn', 'port'].forEach(id => { if ($(id)) $(id).value = ''; });
-    document.querySelectorAll('.choice-btn.selected').forEach(b => b.classList.remove('selected'));
-    // Masquer le bloc extra service
-    const extraBlock = $('cmd-block-extra');
-    if (extraBlock) extraBlock.style.display = 'none';
-    goStep(0);
-  }
+            // Masquer étape actuelle, afficher nouvelle
+            $(`step-${state.currentStep}`).classList.remove('active');
+            $(`step-${n}`).classList.add('active');
+            state.currentStep = n;
 
-  function updateCommands() {
-    const os      = state.os      || 'linux';
-    const service = state.service || 'ssh';
-    const fqdn    = state.fqdn    || $('fqdn').value.trim();
-    const port    = state.port    || $('port').value.trim();
-    const DC = window.DiagCommands;
-    if (!DC) return;
+            // Barre de progression
+            $('progress-bar').style.width = `${(n / (STEP_COUNT - 1)) * 100}%`;
 
-    // Afficher / masquer les blocs IPv6 selon disponibilite
-    const hasIPv6 = !!(window.mirageDiag && window.mirageDiag.ipv6);
-    document.querySelectorAll('.ipv6-only').forEach(el => el.style.display = hasIPv6 ? '' : 'none');
+            // Actions spécifiques
+            if (n > 0) this.updateCommands();
+            if (n === 5) window.generateReport();
 
-    const dns = DC.getDNSCmd(os, fqdn);
-    setText('cmd-dns', dns.cmd); setText('cmd-dns6', dns.cmd6); setText('hint-dns', dns.hint);
+            // Scroll top
+            window.scrollTo(0, 0);
+        },
 
-    const ping = DC.getPingCmd(os, fqdn);
-    setText('cmd-ping', ping.cmd); setText('cmd-ping6', ping.cmd6); setText('hint-ping', ping.hint);
+        saveCurrentStep: function () {
+            if (state.currentStep === 0) {
+                state.fqdn = $('fqdn').value.trim();
+                state.port = $('port').value.trim();
+                state.proxyDetail = $('proxy-detail').value.trim();
+                state.errorMsg = $('error-msg').value.trim();
+            }
+        },
 
-    const trace = DC.getTraceCmd(os, fqdn);
-    setText('cmd-trace', trace.cmd); setText('cmd-trace6', trace.cmd6); setText('hint-trace', trace.hint);
+        updateCommands: function () {
+            const f = state.fqdn;
+            const os = state.os;
+            const s = state.service;
+            const c = state.client;
+            const p = state.port;
 
-    const svc = DC.getServiceCmd(os, service, fqdn, port);
-    setText('cmd-svc', svc.cmd); setText('hint-svc', svc.hint);
-    setText('test-service-intro', svc.intro || '');
+            // DNS
+            setText('cmd-dns', getDNSCmd(f, os, 'A'));
+            setText('cmd-dns6', getDNSCmd(f, os, 'AAAA'));
 
-    const extraBlock = $('cmd-block-extra');
-    if (svc.cmdExtra) {
-      setText('cmd-svc-extra', svc.cmdExtra);
-      if (extraBlock) extraBlock.style.display = '';
-    } else {
-      if (extraBlock) extraBlock.style.display = 'none';
-    }
+            // Ping
+            setText('cmd-ping', getPingCmd(f, os, false));
+            setText('cmd-ping6', getPingCmd(f, os, true));
 
-    // Aide VNC : afficher uniquement pour le service VNC
-    const vncHelp = $('vnc-help');
-    if (vncHelp) vncHelp.style.display = (service === 'vnc') ? '' : 'none';
-  }
+            // Trace
+            setText('cmd-trace', getTraceCmd(f, os, false));
+            setText('cmd-trace6', getTraceCmd(f, os, true));
 
-  function setupChoiceGroup(groupId, stateKey, onSelect) {
-    const group = $(groupId);
-    if (!group) return;
-    group.addEventListener('click', function (e) {
-      const btn = e.target.closest('.choice-btn');
-      if (!btn) return;
-      group.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      state[stateKey] = btn.dataset.value;
-      if (onSelect) onSelect(btn.dataset.value);
-    });
-  }
+            // Service
+            const svc = getServiceCmd(f, p, s, os, c);
+            setText('cmd-svc', svc.main);
+            
+            if (svc.extra) {
+                setText('cmd-svc-extra', svc.extra);
+                $('extra-test-block').style.display = 'block';
+                $('res-svc-extra').style.display = 'block';
+            } else {
+                $('extra-test-block').style.display = 'none';
+                $('res-svc-extra').style.display = 'none';
+            }
 
-  function updateClientGroup() {
-    const service = state.service; const os = state.os;
-    const group = $('grp-client'); const container = $('client-group');
-    if (!service || !os || !group) return;
-    const DC = window.DiagCommands; if (!DC) return;
-    const clients = DC.getClients(service, os);
-    if (!clients || clients.length === 0) {
-      if (container) container.style.display = 'none'; return;
-    }
-    const labels = { ssh: 'Client SSH utilise :', vnc: 'Client VNC utilise :', web: 'Navigateur utilise :' };
-    setText('client-label', labels[service] || 'Client utilise :');
-    group.innerHTML = clients.map(c =>
-      '<button class="choice-btn" data-value="' + c.value + '">' + c.label + '</button>'
-    ).join('');
-    if (container) container.style.display = '';
-    setupChoiceGroup('grp-client', 'client', null);
-  }
+            // IPv6 display logic
+            const hasIPv6 = document.getElementById('ipv6-val').textContent.includes(':');
+            const ipv6Elements = document.querySelectorAll('.ipv6-only');
+            ipv6Elements.forEach(el => {
+                el.style.display = hasIPv6 ? 'block' : 'none';
+            });
+        },
 
-  window.copyCmd = function (codeId, copiedId) {
-    const codeEl = $(codeId); if (!codeEl) return;
-    const text = codeEl.textContent;
-    navigator.clipboard.writeText(text).then(() => showCopied($(copiedId)));
-  };
+        restart: function () {
+            if (!confirm('Recommencer le diagnostic ? Toutes les données saisies seront perdues.')) return;
+            location.reload();
+        }
+    };
 
-  function showCopied(el) {
-    if (!el) return; el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 1800);
-  }
+    /**
+     * Gestion des clics sur les boutons de choix.
+     */
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('choice-btn')) {
+            const group = e.target.parentElement.id;
+            const val = e.target.getAttribute('data-value');
 
-  function init() {
-    setupChoiceGroup('grp-service', 'service', () => { updateClientGroup(); });
-    setupChoiceGroup('grp-os',      'os',      () => { updateClientGroup(); });
-    setupChoiceGroup('grp-proxy',   'proxy',   null);
-    const btnCopy = $('btn-copy-report');
-    if (btnCopy) btnCopy.addEventListener('click', () => {
-      const ta = $('report-output');
-      navigator.clipboard.writeText(ta.value).then(() => showCopied($('copied-report')));
-    });
-    updateProgressBar();
-  }
+            // Sélection visuelle
+            e.target.parentElement.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
+            e.target.classList.add('selected');
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+            // Mise à jour état
+            if (group === 'grp-service') {
+                state.service = val;
+                this.updateClientChoices();
+                // Aide VNC
+                $('vnc-help').style.display = val === 'vnc' ? 'block' : 'none';
+            } else if (group === 'grp-os') {
+                state.os = val;
+                this.updateClientChoices();
+            } else if (group === 'grp-client') {
+                state.client = val;
+            } else if (group === 'grp-proxy') {
+                state.proxy = val;
+            }
+        }
+    }.bind(window.wizard));
 
-  window.wizard = { goStep, restart, getState: () => state };
+    /**
+     * Met à jour les boutons de choix du client.
+     */
+    window.wizard.updateClientChoices = function () {
+        if (!state.service || !state.os) return;
+
+        const clients = getClients(state.service, state.os);
+        const container = $('grp-client');
+        container.innerHTML = '';
+
+        if (clients.length > 0) {
+            $('client-group').style.display = 'block';
+            clients.forEach((c, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn' + (idx === 0 ? ' selected' : '');
+                btn.setAttribute('data-value', c.value);
+                btn.textContent = c.label;
+                container.appendChild(btn);
+                if (idx === 0) state.client = c.value;
+            });
+        } else {
+            $('client-group').style.display = 'none';
+            state.client = null;
+        }
+    };
+
+    /**
+     * Fonction globale de copie.
+     */
+    window.copyCmd = function (codeId, feedbackId) {
+        const text = $(codeId).textContent;
+        const dummy = document.createElement('textarea');
+        document.body.appendChild(dummy);
+        dummy.value = text;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+
+        const feedback = $(feedbackId);
+        feedback.classList.add('show');
+        setTimeout(() => feedback.classList.remove('show'), 2000);
+    };
+
 })();
