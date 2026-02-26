@@ -23,6 +23,11 @@ function getClients(service, os) {
                 { value: 'openssh', label: 'SSH (Terminal)' }
             ]
         },
+        tcp: {
+            windows: [{ value: 'generic', label: 'Client TCP générique' }],
+            macos: [{ value: 'generic', label: 'Client TCP générique' }],
+            linux: [{ value: 'generic', label: 'Client TCP générique' }]
+        },
         vnc: {
             windows: [
                 { value: 'turbovnc', label: 'TurboVNC' },
@@ -129,6 +134,7 @@ function getTraceCmd(fqdn, os, ipv6) {
 function getServiceCmd(fqdn, port, service, os, client) {
     let defaultPort = '80';
     if (service === 'ssh') defaultPort = '22';
+    if (service === 'tcp') defaultPort = '80';
     if (service === 'vnc') defaultPort = '5901';
     if (service === 'web-https') defaultPort = '443';
     if (service === 'udp') defaultPort = '123';
