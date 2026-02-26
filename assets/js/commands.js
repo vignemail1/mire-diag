@@ -74,9 +74,7 @@ function getDNSCmd(fqdn, os, type) {
     const host = 'host -t ' + typeStr + ' ' + fqdn;
     const nslookup = 'nslookup' + typeFlag + ' ' + fqdn;
 
-    return dig + '
-' + host + '
-' + nslookup;
+    return dig + '\n' + host + '\n' + nslookup;
 }
 
 /**
@@ -153,8 +151,7 @@ function getServiceCmd(fqdn, port, service, os, client) {
         commands.extra = 'ssh -vvv ' + fqdn + (port ? ' -p ' + port : '');
     } else if (service === 'web-https') {
         commands.extra = 'openssl s_client -connect ' + fqdn + ':' + p + ' -servername ' + fqdn + ' </dev/null 2>/dev/null | openssl x509 -noout -subject -dates -ext subjectAltName';
-        commands.extraHint = 'Ancienne méthode (avec grep) :
-openssl s_client -connect ' + fqdn + ':' + p + ' -servername ' + fqdn + ' </dev/null 2>/dev/null | openssl x509 -noout -text | grep -E "Subject:|DNS:|Not After|Not Before"';
+        commands.extraHint = 'Ancienne méthode (avec grep) :\nopenssl s_client -connect ' + fqdn + ':' + p + ' -servername ' + fqdn + ' </dev/null 2>/dev/null | openssl x509 -noout -text | grep -E "Subject:|DNS:|Not After|Not Before"';
     }
 
     return commands;
