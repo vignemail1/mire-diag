@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Commands</title>
+</head>
+<body>
+  <h1>Test des fonctions commands.js</h1>
+  <div id="output"></div>
+  
+  <script src="assets/js/commands.js"></script>
+  <script>
+    const output = document.getElementById('output');
+    
+    function test() {
+      try {
+        // Test getClients
+        const clients = getClients('ssh', 'linux');
+        output.innerHTML += '<h2>getClients("ssh", "linux"):</h2><pre>' + JSON.stringify(clients, null, 2) + '</pre>';
+        
+        // Test getDNSCmd
+        const dns = getDNSCmd('example.com', 'linux', 'A');
+        output.innerHTML += '<h2>getDNSCmd("example.com", "linux", "A"):</h2><pre>' + dns + '</pre>';
+        
+        // Test getPingCmd
+        const ping = getPingCmd('example.com', 'linux', false);
+        output.innerHTML += '<h2>getPingCmd("example.com", "linux", false):</h2><pre>' + ping + '</pre>';
+        
+        // Test getTraceCmd
+        const trace = getTraceCmd('example.com', 'linux', false);
+        output.innerHTML += '<h2>getTraceCmd("example.com", "linux", false):</h2><pre>' + JSON.stringify(trace, null, 2) + '</pre>';
+        
+        // Test getServiceCmd
+        const svc = getServiceCmd('example.com', '22', 'ssh', 'linux', 'openssh');
+        output.innerHTML += '<h2>getServiceCmd("example.com", "22", "ssh", "linux", "openssh"):</h2><pre>' + JSON.stringify(svc, null, 2) + '</pre>';
+        
+        output.innerHTML += '<h2 style="color: green;">Tous les tests ont réussi!</h2>';
+      } catch (error) {
+        output.innerHTML += '<h2 style="color: red;">Erreur: ' + error.message + '</h2><pre>' + error.stack + '</pre>';
+      }
+    }
+    
+    // Lancer le test au chargement
+    window.addEventListener('load', test);
+  </script>
+</body>
+</html>
