@@ -32,6 +32,11 @@
       <p class="subtitle">Cet outil vous guide pas à pas pour identifier et documenter votre problème de connexion.</p>
     </header>
 
+    <!-- BARRE DE PROGRESSION -->
+    <div id="progress-bar-wrap">
+      <div id="progress-bar"></div>
+    </div>
+
     <!-- WIZARD -->
     <div id="wizard">
 
@@ -44,6 +49,7 @@
             <button class="choice-btn" data-value="ssh">SSH</button>
             <button class="choice-btn" data-value="vnc">VNC</button>
             <button class="choice-btn" data-value="web">Site web</button>
+            <button class="choice-btn" data-value="web-https">Site web HTTPS</button>
           </div>
         </div>
         <div class="form-group">
@@ -105,7 +111,9 @@
               <span class="cmd-copied" id="copied-dns">Copié !</span>
             </div>
           </div>
-          <div class="cmd-block ipv6-only" style="display:none">
+          <textarea id="res-dns" rows="3" placeholder="Collez ici le résultat de la commande DNS IPv4..."></textarea>
+          
+          <div class="cmd-block ipv6-only" style="display:none; margin-top: 15px;">
             <span class="cmd-label">Commande à exécuter (IPv6) :</span>
             <div class="cmd-line">
               <code id="cmd-dns6">nslookup -type=AAAA ...</code>
@@ -113,6 +121,7 @@
               <span class="cmd-copied" id="copied-dns6">Copié !</span>
             </div>
           </div>
+          <textarea id="res-dns6" class="ipv6-only" rows="3" placeholder="Collez ici le résultat de la commande DNS IPv6..." style="display:none"></textarea>
         </div>
 
         <div class="nav-btns">
@@ -135,7 +144,9 @@
               <span class="cmd-copied" id="copied-ping">Copié !</span>
             </div>
           </div>
-          <div class="cmd-block ipv6-only" style="display:none">
+          <textarea id="res-ping" rows="4" placeholder="Collez ici le résultat du ping IPv4..."></textarea>
+
+          <div class="cmd-block ipv6-only" style="display:none; margin-top: 15px;">
             <span class="cmd-label">Commande IPv6 :</span>
             <div class="cmd-line">
               <code id="cmd-ping6">ping -6 ...</code>
@@ -143,6 +154,7 @@
               <span class="cmd-copied" id="copied-ping6">Copié !</span>
             </div>
           </div>
+          <textarea id="res-ping6" class="ipv6-only" rows="4" placeholder="Collez ici le résultat du ping IPv6..." style="display:none"></textarea>
         </div>
 
         <div class="nav-btns">
@@ -165,7 +177,9 @@
               <span class="cmd-copied" id="copied-trace">Copié !</span>
             </div>
           </div>
-          <div class="cmd-block ipv6-only" style="display:none">
+          <textarea id="res-trace" rows="5" placeholder="Collez ici le résultat du traceroute IPv4..."></textarea>
+
+          <div class="cmd-block ipv6-only" style="display:none; margin-top: 15px;">
             <span class="cmd-label">Commande IPv6 :</span>
             <div class="cmd-line">
               <code id="cmd-trace6">tracert -6 ...</code>
@@ -173,6 +187,7 @@
               <span class="cmd-copied" id="copied-trace6">Copié !</span>
             </div>
           </div>
+          <textarea id="res-trace6" class="ipv6-only" rows="5" placeholder="Collez ici le résultat du traceroute IPv6..." style="display:none"></textarea>
         </div>
 
         <div class="nav-btns">
@@ -194,14 +209,17 @@
               <span class="cmd-copied" id="copied-svc">Copié !</span>
             </div>
           </div>
-          <div class="cmd-block" id="extra-test-block" style="display:none">
-            <span class="cmd-label">Test supplémentaire (Certificat / Verbose) :</span>
+          <textarea id="res-svc" rows="4" placeholder="Collez ici le résultat du test de connexion..."></textarea>
+
+          <div class="cmd-block" id="extra-test-block" style="display:none; margin-top: 15px;">
+            <span class="cmd-label" id="extra-label">Test supplémentaire (Verbose / Certificat) :</span>
             <div class="cmd-line">
-              <code id="cmd-svc-extra">openssl ...</code>
+              <code id="cmd-svc-extra">ssh -vvv ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-svc-extra','copied-svc-extra')">Copier</button>
               <span class="cmd-copied" id="copied-svc-extra">Copié !</span>
             </div>
           </div>
+          <textarea id="res-svc-extra" rows="4" placeholder="Collez ici le résultat du test supplémentaire..." style="display:none"></textarea>
         </div>
 
         <div class="nav-btns">
@@ -223,7 +241,7 @@
 
         <div class="nav-btns">
           <button id="btn-copy-report" class="btn-copy-report" onclick="copyReport()">Copier le rapport</button>
-          <span class="copy-feedback" id="copied-report">Copié !</span>
+          <span class="cmd-copied" id="copied-report" style="color: var(--color-success); opacity: 0; transition: opacity 0.3s; font-weight: bold; margin-left: 10px;">Copié !</span>
         </div>
 
         <div class="nav-btns" style="margin-top: 20px;">
