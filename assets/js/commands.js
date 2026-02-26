@@ -7,9 +7,6 @@
 
 /**
  * Retourne les clients disponibles selon le service et l'OS choisis.
- * @param {string} service - 'ssh' | 'vnc' | 'web' | 'web-https'
- * @param {string} os - 'windows' | 'macos' | 'linux'
- * @returns {Array<{value:string, label:string}>}
  */
 function getClients(service, os) {
     const clients = {
@@ -49,6 +46,11 @@ function getClients(service, os) {
             windows: [{ value: 'browser', label: 'Navigateur Web' }],
             macos: [{ value: 'browser', label: 'Navigateur Web' }],
             linux: [{ value: 'browser', label: 'Navigateur Web' }]
+        },
+        udp: {
+            windows: [{ value: 'generic', label: 'Client UDP générique' }],
+            macos: [{ value: 'generic', label: 'Client UDP générique' }],
+            linux: [{ value: 'generic', label: 'Client UDP générique' }]
         }
     };
 
@@ -59,10 +61,22 @@ function getClients(service, os) {
  * Retourne la commande de résolution DNS.
  */
 function getDNSCmd(fqdn, os, type) {
-    if (type === 'AAAA') {
-        return 'nslookup -type=AAAA ' + fqdn;
+    const isAAAA = (type === 'AAAA');
+    const typeStr = isAAAA ? 'AAAA' : 'A';
+    const typeFlag = isAAAA ? ' -type=AAAA' : '';
+
+    if (os === 'windows') {
+        return 'nslookup' + typeFlag + ' ' + fqdn;
     }
-    return 'nslookup ' + fqdn;
+
+    // Pour Linux/macOS, on propose dig, host puis nslookup
+    const dig = 'dig ' + (isAAAA ? 'AAAA ' : '') + fqdn;
+    const host = 'host -t ' + typeStr + ' ' + fqdn;
+    const nslookup = 'nslookup' + typeFlag + ' ' + fqdn;
+
+    return dig + '
+' + host + '
+' + nslookup;
 }
 
 /**
@@ -79,34 +93,68 @@ function getPingCmd(fqdn, os, ipv6) {
 
 /**
  * Retourne la commande de traceroute.
+ * @returns {{ main: string, hint: string|null }}
  */
 function getTraceCmd(fqdn, os, ipv6) {
+    let main = '';
+    let hint = null;
+
     if (ipv6) {
-        if (os === 'windows') return 'tracert -6 ' + fqdn;
-        if (os === 'macos') return 'traceroute -6 ' + fqdn;
-        return 'mtr -6 -rw -z -b ' + fqdn;
+        if (os === 'windows') {
+            main = 'tracert -6 ' + fqdn;
+        } else if (os === 'macos') {
+            main = 'traceroute -6 ' + fqdn;
+            hint = 'mtr -6 -rw -z -b ' + fqdn;
+        } else {
+            main = 'mtr -6 -rw -z -b ' + fqdn;
+            hint = 'traceroute -6 ' + fqdn;
+        }
+    } else {
+        if (os === 'windows') {
+            main = 'tracert ' + fqdn;
+        } else if (os === 'macos') {
+            main = 'traceroute ' + fqdn;
+            hint = 'mtr -rw -z -b ' + fqdn;
+        } else {
+            main = 'mtr -rw -z -b ' + fqdn;
+            hint = 'traceroute ' + fqdn;
+        }
     }
-    if (os === 'windows') return 'tracert ' + fqdn;
-    if (os === 'macos') return 'traceroute ' + fqdn;
-    return 'mtr -rw -z -b ' + fqdn;
+
+    return { main: main, hint: hint };
 }
 
 /**
  * Retourne les commandes de test de service.
- * @returns {{ main: string, extra: string|null }}
+ * @returns {{ main: string, extra: string|null, extraHint: string|null }}
  */
 function getServiceCmd(fqdn, port, service, os, client) {
-    const p = port || (service === 'ssh' ? '22' : (service === 'vnc' ? '5901' : (service === 'web-https' ? '443' : '80')));
+    let defaultPort = '80';
+    if (service === 'ssh') defaultPort = '22';
+    if (service === 'vnc') defaultPort = '5901';
+    if (service === 'web-https') defaultPort = '443';
+    if (service === 'udp') defaultPort = '123';
+
+    const p = port || defaultPort;
 
     const commands = {
-        main: 'nc -zv ' + fqdn + ' ' + p,
-        extra: null
+        main: '',
+        extra: null,
+        extraHint: null
     };
+
+    if (service === 'udp') {
+        commands.main = 'nc -z -v -u ' + fqdn + ' ' + p;
+    } else {
+        commands.main = 'nc -z -v ' + fqdn + ' ' + p;
+    }
 
     if (service === 'ssh' && client === 'openssh') {
         commands.extra = 'ssh -vvv ' + fqdn + (port ? ' -p ' + port : '');
     } else if (service === 'web-https') {
-        commands.extra = 'openssl s_client -connect ' + fqdn + ':' + p + ' -servername ' + fqdn + ' </dev/null 2>/dev/null | openssl x509 -noout -text | grep -E "Subject:|DNS:|Not After|Not Before"';
+        commands.extra = 'openssl s_client -connect ' + fqdn + ':' + p + ' -servername ' + fqdn + ' </dev/null 2>/dev/null | openssl x509 -noout -subject -dates -ext subjectAltName';
+        commands.extraHint = 'Ancienne méthode (avec grep) :
+openssl s_client -connect ' + fqdn + ':' + p + ' -servername ' + fqdn + ' </dev/null 2>/dev/null | openssl x509 -noout -text | grep -E "Subject:|DNS:|Not After|Not Before"';
     }
 
     return commands;
