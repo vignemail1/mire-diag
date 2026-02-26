@@ -3,7 +3,6 @@
  * Genere le texte du rapport de diagnostic a partir de l'etat du wizard.
  * Le rapport est affiche dans le textarea #report-output a l'etape finale.
  */
-
 'use strict';
 
 (function () {
@@ -34,20 +33,19 @@
    * Mappe les valeurs internes vers des labels lisibles.
    */
   const SERVICE_LABELS = { ssh: 'SSH', vnc: 'VNC', web: 'Site web' };
-  const OS_LABELS      = { windows: 'Windows', macos: 'macOS', linux: 'Linux' };
-  const PROXY_LABELS   = { non: 'Non', vpn: 'VPN', proxy: 'Proxy', 'les deux': 'VPN + Proxy' };
-
+  const OS_LABELS     = { windows: 'Windows', macos: 'macOS', linux: 'Linux' };
+  const PROXY_LABELS  = { non: 'Non', vpn: 'VPN', proxy: 'Proxy', 'les deux': 'VPN + Proxy' };
   const CLIENT_LABELS = {
-    openssh:   'OpenSSH',
-    wsl:       'SSH via WSL (Windows Subsystem for Linux)',
-    mobaxterm: 'MobaXterm',
-    turbovnc:  'TurboVNC',
-    tigervnc:  'TigerVNC / autre client VNC compatible',
-    chrome:    'Google Chrome',
-    firefox:   'Mozilla Firefox',
-    edge:      'Microsoft Edge',
-    safari:    'Safari',
-    other:     'Autre'
+    openssh:  'OpenSSH',
+    wsl:      'SSH via WSL (Windows Subsystem for Linux)',
+    mobaxterm:'MobaXterm',
+    turbovnc: 'TurboVNC',
+    tigervnc: 'TigerVNC / autre client VNC compatible',
+    chrome:   'Google Chrome',
+    firefox:  'Mozilla Firefox',
+    edge:     'Microsoft Edge',
+    safari:   'Safari',
+    other:    'Autre'
   };
 
   /**
@@ -57,23 +55,32 @@
   function generate(state) {
     const ipv4 = (window.mirageDiag && window.mirageDiag.ipv4) || 'Non detectee';
     const ipv6 = (window.mirageDiag && window.mirageDiag.ipv6) || 'Non disponible';
+    const hasIPv6 = !!(window.mirageDiag && window.mirageDiag.ipv6);
 
-    const service     = SERVICE_LABELS[state.service] || state.service || 'Non specifie';
-    const os          = OS_LABELS[state.os]            || state.os      || 'Non specifie';
-    const client      = CLIENT_LABELS[state.client]    || state.client  || 'Non specifie';
-    const fqdn        = state.fqdn        || val('fqdn')         || 'Non specifie';
-    const port        = state.port        || val('port')         || 'Par defaut';
-    const proxy       = PROXY_LABELS[state.proxy]      || state.proxy   || 'Non specifie';
+    const service = SERVICE_LABELS[state.service] || state.service || 'Non specifie';
+    const os      = OS_LABELS[state.os]           || state.os      || 'Non specifie';
+    const client  = CLIENT_LABELS[state.client]   || state.client  || 'Non specifie';
+    const fqdn    = state.fqdn  || val('fqdn')         || 'Non specifie';
+    const port    = state.port  || val('port')          || 'Par defaut';
+    const proxy   = PROXY_LABELS[state.proxy] || state.proxy || 'Non specifie';
     const proxyDetail = state.proxyDetail || val('proxy-detail') || '';
     const errorMsg    = state.errorMsg    || val('error-msg')    || '';
 
-    // Resultats des tests
+    // Resultats des tests IPv4
     const resDns   = val('res-dns');
     const resPing  = val('res-ping');
     const resTrace = val('res-trace');
     const resSvc   = val('res-svc');
 
-    const now = new Date();
+    // Resultats des tests IPv6 (uniquement si IPv6 disponible)
+    const resDns6   = hasIPv6 ? val('res-dns6')   : '';
+    const resPing6  = hasIPv6 ? val('res-ping6')  : '';
+    const resTrace6 = hasIPv6 ? val('res-trace6') : '';
+
+    // Resultat du test supplementaire (certificat HTTPS ou SSH verbose)
+    const resSvcExtra = val('res-svc-extra');
+
+    const now     = new Date();
     const dateStr = now.toLocaleDateString('fr-FR', {
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit'
@@ -81,7 +88,6 @@
 
     // --- Construction du rapport ---
     let lines = [];
-
     lines.push('RAPPORT DE DIAGNOSTIC DE CONNEXION');
     lines.push('Genere le : ' + dateStr);
     lines.push('');
@@ -90,52 +96,45 @@
     lines.push(section(
       '1. INFORMATIONS GENERALES',
       [
-        'Type de connexion : ' + service,
+        'Type de connexion : '     + service,
         'Systeme d\'exploitation : ' + os,
-        'Client utilise : ' + client,
-        'Adresse du service : ' + fqdn,
-        'Port : ' + port,
-        'VPN / Proxy : ' + proxy + (proxyDetail ? ' (' + proxyDetail + ')' : '')
+        'Client utilise : '         + client,
+        'Adresse du service : '     + fqdn,
+        'Port : '                   + port,
+        'VPN / Proxy : '            + proxy + (proxyDetail ? ' (' + proxyDetail + ')' : '')
       ].join('\n')
     ));
 
     // 2. Adresses IP
-    lines.push(section(
-      '2. ADRESSES IP DE L\'UTILISATEUR',
-      [
-        'IPv4 publique : ' + ipv4,
-        'IPv6 publique : ' + ipv6
-      ].join('\n')
-    ));
+    const ipLines = ['IPv4 publique : ' + ipv4];
+    if (hasIPv6) ipLines.push('IPv6 publique : ' + ipv6);
+    else         ipLines.push('IPv6 publique : Non disponible');
+    lines.push(section('2. ADRESSES IP DE L\'UTILISATEUR', ipLines.join('\n')));
 
     // 3. Message d'erreur
-    lines.push(section(
-      '3. MESSAGE D\'ERREUR AFFICHE',
-      errorMsg
-    ));
+    lines.push(section('3. MESSAGE D\'ERREUR AFFICHE', errorMsg));
 
     // 4. Resolution DNS
-    lines.push(section(
-      '4. RESULTAT RESOLUTION DNS',
-      resDns
-    ));
+    const dnsContent = resDns
+      + (hasIPv6 && resDns6 ? '\n\n[IPv6]\n' + resDns6 : '');
+    lines.push(section('4. RESULTAT RESOLUTION DNS', dnsContent));
 
     // 5. Ping
-    lines.push(section(
-      '5. RESULTAT PING',
-      resPing
-    ));
+    const pingContent = resPing
+      + (hasIPv6 && resPing6 ? '\n\n[IPv6]\n' + resPing6 : '');
+    lines.push(section('5. RESULTAT PING', pingContent));
 
     // 6. Traceroute
-    lines.push(section(
-      '6. RESULTAT TRACEROUTE',
-      resTrace
-    ));
+    const traceContent = resTrace
+      + (hasIPv6 && resTrace6 ? '\n\n[IPv6]\n' + resTrace6 : '');
+    lines.push(section('6. RESULTAT TRACEROUTE', traceContent));
 
     // 7. Test de connexion au service
+    let svcContent = resSvc;
+    if (resSvcExtra) svcContent += '\n\n[Test supplementaire (certificat / verbose)]\n' + resSvcExtra;
     lines.push(section(
       '7. RESULTAT TEST DE CONNEXION AU SERVICE (' + service.toUpperCase() + ')',
-      resSvc
+      svcContent
     ));
 
     // Pied de rapport
@@ -144,7 +143,6 @@
     lines.push('Note : ce rapport a ete genere automatiquement. Aucune donnee n\'a ete envoyee.');
 
     const reportText = lines.join('\n');
-
     const ta = document.getElementById('report-output');
     if (ta) {
       ta.value = reportText;
@@ -154,5 +152,4 @@
 
   // Exposition globale
   window.DiagReport = { generate };
-
 })();
