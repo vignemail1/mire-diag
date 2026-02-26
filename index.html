@@ -47,9 +47,10 @@
           <label>Quel type de service n'est pas accessible ?</label>
           <div class="btn-group" id="grp-service">
             <button class="choice-btn" data-value="ssh">SSH</button>
-            <button class="choice-btn" data-value="vnc">VNC</button>
+            <button class="choice-btn" data-value="vnc">TCP/VNC</button>
             <button class="choice-btn" data-value="web">Site web</button>
             <button class="choice-btn" data-value="web-https">Site web HTTPS</button>
+            <button class="choice-btn" data-value="udp">UDP</button>
           </div>
         </div>
         <div class="form-group">
@@ -73,7 +74,7 @@
         </div>
         <div class="form-group">
           <label for="port">Port (laissez vide si vous ne savez pas) :</label>
-          <input type="text" id="port" placeholder="ex: 22, 5901, 443" autocomplete="off" spellcheck="false">
+          <input type="text" id="port" placeholder="ex: 22, 5901, 443, 123, 123" autocomplete="off" spellcheck="false">
         </div>
         <div class="form-group">
           <label>Utilisez-vous un VPN ou un proxy ?</label>
@@ -104,9 +105,9 @@
 
         <div class="form-group">
           <div class="cmd-block">
-            <span class="cmd-label">Commande à exécuter (IPv4) :</span>
+            <span class="cmd-label">Commande(s) à exécuter (IPv4) :</span>
             <div class="cmd-line">
-              <code id="cmd-dns">nslookup ...</code>
+              <code id="cmd-dns" style="white-space: pre-wrap;">nslookup ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-dns','copied-dns')">Copier</button>
               <span class="cmd-copied" id="copied-dns">Copié !</span>
             </div>
@@ -114,9 +115,9 @@
           <textarea id="res-dns" rows="3" placeholder="Collez ici le résultat de la commande DNS IPv4..."></textarea>
           
           <div class="cmd-block ipv6-only" style="display:none; margin-top: 15px;">
-            <span class="cmd-label">Commande à exécuter (IPv6) :</span>
+            <span class="cmd-label">Commande(s) à exécuter (IPv6) :</span>
             <div class="cmd-line">
-              <code id="cmd-dns6">nslookup -type=AAAA ...</code>
+              <code id="cmd-dns6" style="white-space: pre-wrap;">nslookup -type=AAAA ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-dns6','copied-dns6')">Copier</button>
               <span class="cmd-copied" id="copied-dns6">Copié !</span>
             </div>
@@ -176,6 +177,7 @@
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-trace','copied-trace')">Copier</button>
               <span class="cmd-copied" id="copied-trace">Copié !</span>
             </div>
+            <div id="cmd-trace-hint" class="cmd-hint" style="display:none; margin-top: 10px;"></div>
           </div>
           <textarea id="res-trace" rows="5" placeholder="Collez ici le résultat du traceroute IPv4..."></textarea>
 
@@ -186,6 +188,7 @@
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-trace6','copied-trace6')">Copier</button>
               <span class="cmd-copied" id="copied-trace6">Copié !</span>
             </div>
+            <div id="cmd-trace6-hint" class="cmd-hint" style="display:none; margin-top: 10px;"></div>
           </div>
           <textarea id="res-trace6" class="ipv6-only" rows="5" placeholder="Collez ici le résultat du traceroute IPv6..." style="display:none"></textarea>
         </div>
@@ -212,12 +215,13 @@
           <textarea id="res-svc" rows="4" placeholder="Collez ici le résultat du test de connexion..."></textarea>
 
           <div class="cmd-block" id="extra-test-block" style="display:none; margin-top: 15px;">
-            <span class="cmd-label" id="extra-label">Test supplémentaire (Verbose / Certificat) :</span>
+            <span class="cmd-label" id="extra-label">Test supplémentaire :</span>
             <div class="cmd-line">
               <code id="cmd-svc-extra">ssh -vvv ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-svc-extra','copied-svc-extra')">Copier</button>
               <span class="cmd-copied" id="copied-svc-extra">Copié !</span>
             </div>
+            <div id="cmd-svc-extra-hint" class="cmd-hint" style="display:none; margin-top: 10px;"></div>
           </div>
           <textarea id="res-svc-extra" rows="4" placeholder="Collez ici le résultat du test supplémentaire..." style="display:none"></textarea>
         </div>
