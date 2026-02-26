@@ -47,7 +47,8 @@
           <label>Quel type de service n'est pas accessible ?</label>
           <div class="btn-group" id="grp-service">
             <button class="choice-btn" data-value="ssh">SSH</button>
-            <button class="choice-btn" data-value="vnc">TCP/VNC</button>
+            <button class="choice-btn" data-value="tcp">TCP</button>
+            <button class="choice-btn" data-value="vnc">VNC</button>
             <button class="choice-btn" data-value="web">Site web</button>
             <button class="choice-btn" data-value="web-https">Site web HTTPS</button>
             <button class="choice-btn" data-value="udp">UDP</button>
@@ -74,7 +75,7 @@
         </div>
         <div class="form-group">
           <label for="port">Port (laissez vide si vous ne savez pas) :</label>
-          <input type="text" id="port" placeholder="ex: 22, 5901, 443, 123, 123" autocomplete="off" spellcheck="false">
+          <input type="text" id="port" placeholder="ex: 22, 5901, 443, 123" autocomplete="off" spellcheck="false">
         </div>
         <div class="form-group">
           <label>Utilisez-vous un VPN ou un proxy ?</label>
