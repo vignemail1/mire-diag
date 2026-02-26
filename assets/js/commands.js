@@ -23,11 +23,6 @@ function getClients(service, os) {
                 { value: 'openssh', label: 'SSH (Terminal)' }
             ]
         },
-        tcp: {
-            windows: [{ value: 'generic', label: 'Client TCP générique' }],
-            macos: [{ value: 'generic', label: 'Client TCP générique' }],
-            linux: [{ value: 'generic', label: 'Client TCP générique' }]
-        },
         vnc: {
             windows: [
                 { value: 'turbovnc', label: 'TurboVNC' },
@@ -51,6 +46,11 @@ function getClients(service, os) {
             windows: [{ value: 'browser', label: 'Navigateur Web' }],
             macos: [{ value: 'browser', label: 'Navigateur Web' }],
             linux: [{ value: 'browser', label: 'Navigateur Web' }]
+        },
+        tcp: {
+            windows: [{ value: 'generic', label: 'Client TCP générique' }],
+            macos: [{ value: 'generic', label: 'Client TCP générique' }],
+            linux: [{ value: 'generic', label: 'Client TCP générique' }]
         },
         udp: {
             windows: [{ value: 'generic', label: 'Client UDP générique' }],
