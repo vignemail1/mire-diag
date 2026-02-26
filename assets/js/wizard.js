@@ -34,7 +34,6 @@
     saveCurrentStep();
     if (n > 0) updateCommands();
     if (n === 5 && window.DiagReport) window.DiagReport.generate(state);
-
     const current = document.querySelector('.step.active');
     if (current) current.classList.remove('active');
     const next = $('step-' + n);
@@ -46,10 +45,10 @@
   }
 
   function saveCurrentStep() {
-    state.fqdn = ($('fqdn') || {}).value || state.fqdn;
-    state.port = ($('port') || {}).value || state.port;
-    state.proxyDetail = ($('proxy-detail')|| {}).value || state.proxyDetail;
-    state.errorMsg = ($('error-msg') || {}).value || state.errorMsg;
+    state.fqdn        = ($('fqdn')         || {}).value || state.fqdn;
+    state.port        = ($('port')         || {}).value || state.port;
+    state.proxyDetail = ($('proxy-detail') || {}).value || state.proxyDetail;
+    state.errorMsg    = ($('error-msg')    || {}).value || state.errorMsg;
   }
 
   function updateProgressBar() {
@@ -64,22 +63,33 @@
     state.service = null; state.os = null; state.client = null;
     state.fqdn = ''; state.port = ''; state.proxy = null;
     state.proxyDetail = ''; state.errorMsg = '';
-    ['res-dns','res-dns6','res-ping','res-ping6','res-trace','res-trace6','res-svc','error-msg','proxy-detail'].forEach(id => {
+    // Vider tous les champs de resultat (IPv4, IPv6, extra)
+    [
+      'res-dns', 'res-dns6',
+      'res-ping', 'res-ping6',
+      'res-trace', 'res-trace6',
+      'res-svc', 'res-svc-extra',
+      'error-msg', 'proxy-detail'
+    ].forEach(id => {
       if ($(id)) $(id).value = '';
     });
-    ['fqdn','port'].forEach(id => { if ($(id)) $(id).value = ''; });
+    ['fqdn', 'port'].forEach(id => { if ($(id)) $(id).value = ''; });
     document.querySelectorAll('.choice-btn.selected').forEach(b => b.classList.remove('selected'));
+    // Masquer le bloc extra service
+    const extraBlock = $('cmd-block-extra');
+    if (extraBlock) extraBlock.style.display = 'none';
     goStep(0);
   }
 
   function updateCommands() {
-    const os = state.os || 'linux';
+    const os      = state.os      || 'linux';
     const service = state.service || 'ssh';
-    const fqdn = state.fqdn || $('fqdn').value.trim();
-    const port = state.port || $('port').value.trim();
+    const fqdn    = state.fqdn    || $('fqdn').value.trim();
+    const port    = state.port    || $('port').value.trim();
     const DC = window.DiagCommands;
     if (!DC) return;
 
+    // Afficher / masquer les blocs IPv6 selon disponibilite
     const hasIPv6 = !!(window.mirageDiag && window.mirageDiag.ipv6);
     document.querySelectorAll('.ipv6-only').forEach(el => el.style.display = hasIPv6 ? '' : 'none');
 
@@ -103,8 +113,8 @@
     } else {
       if (extraBlock) extraBlock.style.display = 'none';
     }
-    
-    // Aide VNC
+
+    // Aide VNC : afficher uniquement pour le service VNC
     const vncHelp = $('vnc-help');
     if (vncHelp) vncHelp.style.display = (service === 'vnc') ? '' : 'none';
   }
@@ -133,7 +143,9 @@
     }
     const labels = { ssh: 'Client SSH utilise :', vnc: 'Client VNC utilise :', web: 'Navigateur utilise :' };
     setText('client-label', labels[service] || 'Client utilise :');
-    group.innerHTML = clients.map(c => '<button class="choice-btn" data-value="' + c.value + '">' + c.label + '</button>').join('');
+    group.innerHTML = clients.map(c =>
+      '<button class="choice-btn" data-value="' + c.value + '">' + c.label + '</button>'
+    ).join('');
     if (container) container.style.display = '';
     setupChoiceGroup('grp-client', 'client', null);
   }
@@ -151,8 +163,8 @@
 
   function init() {
     setupChoiceGroup('grp-service', 'service', () => { updateClientGroup(); });
-    setupChoiceGroup('grp-os', 'os', () => { updateClientGroup(); });
-    setupChoiceGroup('grp-proxy', 'proxy', null);
+    setupChoiceGroup('grp-os',      'os',      () => { updateClientGroup(); });
+    setupChoiceGroup('grp-proxy',   'proxy',   null);
     const btnCopy = $('btn-copy-report');
     if (btnCopy) btnCopy.addEventListener('click', () => {
       const ta = $('report-output');
