@@ -9,19 +9,31 @@
   'use strict';
 
   // --- Configuration des endpoints ---
-  // On utilise deux sous-domaines distincts pour forcer IPv4 ou IPv6
+  // Plusieurs sources par version IP pour maximiser la disponibilite.
+  // Les sous-domaines api4./api6. ou ipv4./ipv6. forcent la version IP cote DNS.
   const ENDPOINTS = {
     v4: [
       'https://api4.ipify.org?format=json',
-      'https://ipv4.jsonip.com'
+      'https://ipv4.jsonip.com',
+      'https://ipv4.icanhazip.com',
+      'https://ipv4.ident.me',
+      'https://api4.my-ip.io/ip.json'
     ],
     v6: [
       'https://api6.ipify.org?format=json',
-      'https://ipv6.jsonip.com'
+      'https://ipv6.jsonip.com',
+      'https://ipv6.icanhazip.com',
+      'https://ipv6.ident.me',
+      'https://api6.my-ip.io/ip.json'
     ]
   };
 
-  const TIMEOUT_MS = 4000;
+  // Timeout par requete (ms)
+  const TIMEOUT_MS = 3000;
+  // Delai avant retry global (ms)
+  const RETRY_DELAY_MS = 2000;
+  // Nombre de tentatives globales
+  const MAX_RETRIES = 2;
 
   // --- Utilitaires ---
 
@@ -44,22 +56,46 @@
   }
 
   /**
+   * Valide qu'une chaine ressemble a une adresse IP (v4 ou v6).
+   * Rejette les valeurs comme "undefined", chaînes vides, etc.
+   * @param {string} str
+   * @returns {boolean}
+   */
+  function isValidIP(str) {
+    if (!str || typeof str !== 'string') return false;
+    const s = str.trim();
+    if (s.length === 0 || s === 'undefined' || s === 'null') return false;
+    // IPv4 basique : 4 groupes de chiffres separes par des points
+    const ipv4Re = /^(\d{1,3}\.){3}\d{1,3}$/;
+    // IPv6 : contient au moins deux points ou un double-colon
+    const ipv6Re = /^[0-9a-fA-F:]{2,39}$|^::1$/;
+    return ipv4Re.test(s) || s.includes(':');
+  }
+
+  /**
    * Extrait l'adresse IP d'une reponse JSON ou texte.
-   * Supporte les formats : {"ip":"x.x.x.x"} ou texte brut "x.x.x.x"
+   * Supporte les formats : {"ip":"x.x.x.x"}, {"IPv4":"x"}, {"IPv6":"x"}
+   * ou texte brut "x.x.x.x". Rejette les valeurs invalides.
+   * @param {string} raw
+   * @returns {string|null}
    */
   function parseIP(raw) {
+    if (!raw) return null;
     const text = raw.trim();
     try {
       const obj = JSON.parse(text);
-      return obj.ip || obj.IPv4 || obj.IPv6 || null;
-    } catch (e) {
-      // format texte brut
-      return text || null;
+      // Cherche les champs communs dans l'ordre de preference
+      const candidate = obj.ip || obj.IPv4 || obj.IPv6 || obj.ipAddress || null;
+      if (candidate && isValidIP(String(candidate))) return String(candidate).trim();
+      return null;
+    } catch (_) {
+      // Reponse en texte brut (ex: icanhazip, ident.me)
+      return isValidIP(text) ? text : null;
     }
   }
 
   /**
-   * Essaie plusieurs endpoints en serie et retourne le premier qui repond.
+   * Essaie plusieurs endpoints en serie et retourne le premier IP valide.
    * @param {string[]} urls
    * @returns {Promise<string|null>}
    */
@@ -70,8 +106,25 @@
         const ip = parseIP(raw);
         if (ip) return ip;
       } catch (_) {
-        // essai suivant
+        // endpoint indisponible ou timeout, on essaie le suivant
       }
+    }
+    return null;
+  }
+
+  /**
+   * Detecte l'IP avec des tentatives automatiques en cas d'echec global.
+   * @param {string[]} urls
+   * @param {number} retries
+   * @returns {Promise<string|null>}
+   */
+  async function detectWithRetry(urls, retries) {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+      }
+      const ip = await detectFromEndpoints(urls);
+      if (ip) return ip;
     }
     return null;
   }
@@ -141,10 +194,10 @@
       if (el) el.classList.add('loading');
     });
 
-    // Detection en parallele
+    // Detection en parallele avec retry
     const [ipv4, ipv6] = await Promise.all([
-      detectFromEndpoints(ENDPOINTS.v4),
-      detectFromEndpoints(ENDPOINTS.v6)
+      detectWithRetry(ENDPOINTS.v4, MAX_RETRIES),
+      detectWithRetry(ENDPOINTS.v6, MAX_RETRIES)
     ]);
 
     displayIP('ipv4-val', 'copy-ipv4', 'copied-ipv4', ipv4);

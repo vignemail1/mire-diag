@@ -84,11 +84,14 @@ function getDNSCmd(fqdn, os, type) {
 
 /**
  * Retourne la commande de ping.
+ * Note : sur macOS, ping6 est la commande native pour l'IPv6
+ * (ping -6 n'existe pas sous macOS).
  */
 function getPingCmd(fqdn, os, ipv6) {
     if (ipv6) {
         if (os === 'windows') return 'ping -6 ' + fqdn;
-        return 'ping -6 -c 4 ' + fqdn;
+        if (os === 'macos')   return 'ping6 -c 4 ' + fqdn;
+        return 'ping -6 -c 4 ' + fqdn;  // Linux
     }
     if (os === 'windows') return 'ping ' + fqdn;
     return 'ping -c 4 ' + fqdn;
@@ -96,6 +99,8 @@ function getPingCmd(fqdn, os, ipv6) {
 
 /**
  * Retourne la commande de traceroute.
+ * Note : sur macOS, traceroute6 est la commande native pour l'IPv6
+ * (traceroute -6 ou tracert -6 ne sont pas disponibles).
  * @returns {{ main: string, hint: string|null }}
  */
 function getTraceCmd(fqdn, os, ipv6) {
@@ -106,9 +111,11 @@ function getTraceCmd(fqdn, os, ipv6) {
         if (os === 'windows') {
             main = 'tracert -6 ' + fqdn;
         } else if (os === 'macos') {
-            main = 'traceroute -6 ' + fqdn;
+            // traceroute6 est le binaire natif sur macOS pour l'IPv6
+            main = 'traceroute6 ' + fqdn;
             hint = 'mtr -6 -rw -z -b ' + fqdn;
         } else {
+            // Linux : mtr en priorité car plus complet
             main = 'mtr -6 -rw -z -b ' + fqdn;
             hint = 'traceroute -6 ' + fqdn;
         }
