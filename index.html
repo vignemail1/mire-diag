@@ -23,13 +23,23 @@
         <button class="btn-copy" id="copy-ipv6" title="Copier IPv6">Copier</button>
         <span class="ip-copied" id="copied-ipv6">Copie !</span>
       </div>
+      <div class="ip-private-note">
+        <strong>&#9888;&#65039; Adresse IP priv&eacute;e d&eacute;tect&eacute;e&nbsp;?</strong>
+        Si la d&eacute;tection automatique retourne une adresse appartenant &agrave; une des plages priv&eacute;es
+        suivantes&nbsp;: <code>10.x.x.x</code>, <code>172.16.x.x&ndash;172.31.x.x</code>,
+        <code>192.168.x.x</code>, <code>127.x.x.x</code> (loopback), <code>169.254.x.x</code>
+        (lien-local) ou <code>224.x.x.x&ndash;255.x.x.x</code> (multicast/r&eacute;serv&eacute;),
+        il ne s&rsquo;agit <strong>pas</strong> de votre adresse IP publique.
+        Contactez votre <strong>FAI</strong> ou votre <strong>service informatique</strong>
+        pour conna&icirc;tre votre v&eacute;ritable adresse IP publique.
+      </div>
     </div>
   </div>
 
   <div class="container">
     <header>
       <h1>Assistant de diagnostic de connexion</h1>
-      <p class="subtitle">Cet outil vous guide pas à pas pour identifier et documenter votre problème de connexion.</p>
+      <p class="subtitle">Cet outil vous guide pas &agrave; pas pour identifier et documenter votre probl&egrave;me de connexion.</p>
     </header>
 
     <!-- BARRE DE PROGRESSION -->
@@ -42,7 +52,7 @@
 
       <!-- ETAPE 0 : choix service + OS -->
       <div class="step active" id="step-0">
-        <h2>Etape 1 &mdash; Informations générales</h2>
+        <h2>Etape 1 &mdash; Informations g&eacute;n&eacute;rales</h2>
         <div class="form-group">
           <label>Quel type de service n'est pas accessible ?</label>
           <div class="btn-group" id="grp-service">
@@ -55,7 +65,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Sur quel système êtes-vous ?</label>
+          <label>Sur quel syst&egrave;me &ecirc;tes-vous ?</label>
           <div class="btn-group" id="grp-os">
             <button class="choice-btn" data-value="windows">Windows</button>
             <button class="choice-btn" data-value="macos">macOS</button>
@@ -63,18 +73,18 @@
           </div>
         </div>
         <div class="form-group" id="client-group" style="display:none">
-          <label id="client-label">Client utilisé :</label>
+          <label id="client-label">Client utilis&eacute;&nbsp;:</label>
           <div class="btn-group" id="grp-client"></div>
         </div>
         <div class="form-group">
-          <label for="fqdn">Adresse du service (nom ou IP) :</label>
+          <label for="fqdn">Adresse du service (nom ou IP)&nbsp;:</label>
           <input type="text" id="fqdn" placeholder="ex: monserveur.exemple.com ou 10.0.0.1" autocomplete="off" spellcheck="false">
           <div id="vnc-help" class="cmd-hint" style="display:none">
             <strong>Aide VNC :</strong> Si vous utilisez une session (ex: <code>:1</code>), l'adresse est le nom du serveur et le port est <code>5900 + session</code> (ex: session :1 = port 5901).
           </div>
         </div>
         <div class="form-group">
-          <label for="port">Port (laissez vide si vous ne savez pas) :</label>
+          <label for="port">Port (laissez vide si vous ne savez pas)&nbsp;:</label>
           <input type="text" id="port" placeholder="ex: 22, 5901, 443, 123" autocomplete="off" spellcheck="false">
         </div>
         <div class="form-group">
@@ -87,11 +97,11 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="proxy-detail">Détail VPN/proxy (facultatif) :</label>
+          <label for="proxy-detail">D&eacute;tail VPN/proxy (facultatif)&nbsp;:</label>
           <input type="text" id="proxy-detail" placeholder="ex: OpenVPN entreprise, proxy 10.0.0.5:3128" autocomplete="off">
         </div>
         <div class="form-group">
-          <label for="error-msg">Message d'erreur affiché (copiez-le exactement) :</label>
+          <label for="error-msg">Message d'erreur affich&eacute; (copiez-le exactement)&nbsp;:</label>
           <textarea id="error-msg" rows="3" placeholder="ex: Connection refused, Timeout, ERR_NAME_NOT_RESOLVED..."></textarea>
         </div>
         <div class="nav-btns">
@@ -101,101 +111,101 @@
 
       <!-- ETAPE 1 : DNS -->
       <div class="step" id="step-1">
-        <h2>Etape 2 &mdash; Résolution DNS</h2>
-        <p class="step-intro">Vérifiez que le nom du service se traduit bien en adresse IP. Lancez la commande ci-dessous.</p>
+        <h2>Etape 2 &mdash; R&eacute;solution DNS</h2>
+        <p class="step-intro">V&eacute;rifiez que le nom du service se traduit bien en adresse IP. Lancez la commande ci-dessous.</p>
 
         <div class="form-group">
           <div class="cmd-block">
-            <span class="cmd-label">Commande(s) à exécuter (IPv4) :</span>
+            <span class="cmd-label">Commande(s) &agrave; ex&eacute;cuter (IPv4)&nbsp;:</span>
             <div class="cmd-line">
               <code id="cmd-dns" style="white-space: pre-wrap;">nslookup ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-dns','copied-dns')">Copier</button>
-              <span class="cmd-copied" id="copied-dns">Copié !</span>
+              <span class="cmd-copied" id="copied-dns">Copi&eacute; !</span>
             </div>
           </div>
-          <textarea id="res-dns" rows="3" placeholder="Collez ici le résultat de la commande DNS IPv4..."></textarea>
-          
+          <textarea id="res-dns" rows="3" placeholder="Collez ici le r&eacute;sultat de la commande DNS IPv4..."></textarea>
+
           <div class="cmd-block ipv6-only" style="display:none; margin-top: 15px;">
-            <span class="cmd-label">Commande(s) à exécuter (IPv6) :</span>
+            <span class="cmd-label">Commande(s) &agrave; ex&eacute;cuter (IPv6)&nbsp;:</span>
             <div class="cmd-line">
               <code id="cmd-dns6" style="white-space: pre-wrap;">nslookup -type=AAAA ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-dns6','copied-dns6')">Copier</button>
-              <span class="cmd-copied" id="copied-dns6">Copié !</span>
+              <span class="cmd-copied" id="copied-dns6">Copi&eacute; !</span>
             </div>
           </div>
-          <textarea id="res-dns6" class="ipv6-only" rows="3" placeholder="Collez ici le résultat de la commande DNS IPv6..." style="display:none"></textarea>
+          <textarea id="res-dns6" class="ipv6-only" rows="3" placeholder="Collez ici le r&eacute;sultat de la commande DNS IPv6..." style="display:none"></textarea>
         </div>
 
         <div class="nav-btns">
-          <button class="btn-prev" onclick="wizard.goStep(0)">&larr; Précédent</button>
+          <button class="btn-prev" onclick="wizard.goStep(0)">&larr; Pr&eacute;c&eacute;dent</button>
           <button class="btn-next" onclick="wizard.goStep(2)">Suivant &rarr;</button>
         </div>
       </div>
 
       <!-- ETAPE 2 : Ping -->
       <div class="step" id="step-2">
-        <h2>Etape 3 &mdash; Connectivité réseau (Ping)</h2>
-        <p class="step-intro">Le ping vérifie si votre machine peut joindre le serveur.</p>
+        <h2>Etape 3 &mdash; Connectivit&eacute; r&eacute;seau (Ping)</h2>
+        <p class="step-intro">Le ping v&eacute;rifie si votre machine peut joindre le serveur.</p>
 
         <div class="form-group">
           <div class="cmd-block">
-            <span class="cmd-label">Commande IPv4 :</span>
+            <span class="cmd-label">Commande IPv4&nbsp;:</span>
             <div class="cmd-line">
               <code id="cmd-ping">ping ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-ping','copied-ping')">Copier</button>
-              <span class="cmd-copied" id="copied-ping">Copié !</span>
+              <span class="cmd-copied" id="copied-ping">Copi&eacute; !</span>
             </div>
           </div>
-          <textarea id="res-ping" rows="4" placeholder="Collez ici le résultat du ping IPv4..."></textarea>
+          <textarea id="res-ping" rows="4" placeholder="Collez ici le r&eacute;sultat du ping IPv4..."></textarea>
 
           <div class="cmd-block ipv6-only" style="display:none; margin-top: 15px;">
-            <span class="cmd-label">Commande IPv6 :</span>
+            <span class="cmd-label">Commande IPv6&nbsp;:</span>
             <div class="cmd-line">
               <code id="cmd-ping6">ping -6 ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-ping6','copied-ping6')">Copier</button>
-              <span class="cmd-copied" id="copied-ping6">Copié !</span>
+              <span class="cmd-copied" id="copied-ping6">Copi&eacute; !</span>
             </div>
           </div>
-          <textarea id="res-ping6" class="ipv6-only" rows="4" placeholder="Collez ici le résultat du ping IPv6..." style="display:none"></textarea>
+          <textarea id="res-ping6" class="ipv6-only" rows="4" placeholder="Collez ici le r&eacute;sultat du ping IPv6..." style="display:none"></textarea>
         </div>
 
         <div class="nav-btns">
-          <button class="btn-prev" onclick="wizard.goStep(1)">&larr; Précédent</button>
+          <button class="btn-prev" onclick="wizard.goStep(1)">&larr; Pr&eacute;c&eacute;dent</button>
           <button class="btn-next" onclick="wizard.goStep(3)">Suivant &rarr;</button>
         </div>
       </div>
 
       <!-- ETAPE 3 : Traceroute -->
       <div class="step" id="step-3">
-        <h2>Etape 4 &mdash; Chemin réseau (Traceroute)</h2>
-        <p class="step-intro">Le traceroute montre chaque étape du trajet entre vous et le serveur.</p>
+        <h2>Etape 4 &mdash; Chemin r&eacute;seau (Traceroute)</h2>
+        <p class="step-intro">Le traceroute montre chaque &eacute;tape du trajet entre vous et le serveur.</p>
 
         <div class="form-group">
           <div class="cmd-block">
-            <span class="cmd-label">Commande IPv4 :</span>
+            <span class="cmd-label">Commande IPv4&nbsp;:</span>
             <div class="cmd-line">
               <code id="cmd-trace">tracert ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-trace','copied-trace')">Copier</button>
-              <span class="cmd-copied" id="copied-trace">Copié !</span>
+              <span class="cmd-copied" id="copied-trace">Copi&eacute; !</span>
             </div>
             <div id="cmd-trace-hint" class="cmd-hint" style="display:none; margin-top: 10px;"></div>
           </div>
-          <textarea id="res-trace" rows="5" placeholder="Collez ici le résultat du traceroute IPv4..."></textarea>
+          <textarea id="res-trace" rows="5" placeholder="Collez ici le r&eacute;sultat du traceroute IPv4..."></textarea>
 
           <div class="cmd-block ipv6-only" style="display:none; margin-top: 15px;">
-            <span class="cmd-label">Commande IPv6 :</span>
+            <span class="cmd-label">Commande IPv6&nbsp;:</span>
             <div class="cmd-line">
               <code id="cmd-trace6">tracert -6 ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-trace6','copied-trace6')">Copier</button>
-              <span class="cmd-copied" id="copied-trace6">Copié !</span>
+              <span class="cmd-copied" id="copied-trace6">Copi&eacute; !</span>
             </div>
             <div id="cmd-trace6-hint" class="cmd-hint" style="display:none; margin-top: 10px;"></div>
           </div>
-          <textarea id="res-trace6" class="ipv6-only" rows="5" placeholder="Collez ici le résultat du traceroute IPv6..." style="display:none"></textarea>
+          <textarea id="res-trace6" class="ipv6-only" rows="5" placeholder="Collez ici le r&eacute;sultat du traceroute IPv6..." style="display:none"></textarea>
         </div>
 
         <div class="nav-btns">
-          <button class="btn-prev" onclick="wizard.goStep(2)">&larr; Précédent</button>
+          <button class="btn-prev" onclick="wizard.goStep(2)">&larr; Pr&eacute;c&eacute;dent</button>
           <button class="btn-next" onclick="wizard.goStep(4)">Suivant &rarr;</button>
         </div>
       </div>
@@ -206,29 +216,29 @@
 
         <div class="form-group">
           <div class="cmd-block">
-            <span class="cmd-label">Commande de test :</span>
+            <span class="cmd-label">Commande de test&nbsp;:</span>
             <div class="cmd-line">
               <code id="cmd-svc">nc -zv ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-svc','copied-svc')">Copier</button>
-              <span class="cmd-copied" id="copied-svc">Copié !</span>
+              <span class="cmd-copied" id="copied-svc">Copi&eacute; !</span>
             </div>
           </div>
-          <textarea id="res-svc" rows="4" placeholder="Collez ici le résultat du test de connexion..."></textarea>
+          <textarea id="res-svc" rows="4" placeholder="Collez ici le r&eacute;sultat du test de connexion..."></textarea>
 
           <div class="cmd-block" id="extra-test-block" style="display:none; margin-top: 15px;">
-            <span class="cmd-label" id="extra-label">Test supplémentaire :</span>
+            <span class="cmd-label" id="extra-label">Test suppl&eacute;mentaire&nbsp;:</span>
             <div class="cmd-line">
               <code id="cmd-svc-extra">ssh -vvv ...</code>
               <button class="btn-copy-cmd" onclick="copyCmd('cmd-svc-extra','copied-svc-extra')">Copier</button>
-              <span class="cmd-copied" id="copied-svc-extra">Copié !</span>
+              <span class="cmd-copied" id="copied-svc-extra">Copi&eacute; !</span>
             </div>
             <div id="cmd-svc-extra-hint" class="cmd-hint" style="display:none; margin-top: 10px;"></div>
           </div>
-          <textarea id="res-svc-extra" rows="4" placeholder="Collez ici le résultat du test supplémentaire..." style="display:none"></textarea>
+          <textarea id="res-svc-extra" rows="4" placeholder="Collez ici le r&eacute;sultat du test suppl&eacute;mentaire..." style="display:none"></textarea>
         </div>
 
         <div class="nav-btns">
-          <button class="btn-prev" onclick="wizard.goStep(3)">&larr; Précédent</button>
+          <button class="btn-prev" onclick="wizard.goStep(3)">&larr; Pr&eacute;c&eacute;dent</button>
           <button class="btn-next" onclick="wizard.goStep(5)">Suivant &rarr;</button>
         </div>
       </div>
@@ -236,7 +246,7 @@
       <!-- ETAPE 5 : Rapport -->
       <div class="step" id="step-5">
         <h2>Etape 6 &mdash; Rapport pour le support</h2>
-        <p>Voici le rapport complet prêt à être envoyé à notre équipe de support.</p>
+        <p>Voici le rapport complet pr&ecirc;t &agrave; &ecirc;tre envoy&eacute; &agrave; notre &eacute;quipe de support.</p>
 
         <div class="form-group">
           <div class="report-block">
@@ -246,11 +256,11 @@
 
         <div class="nav-btns">
           <button id="btn-copy-report" class="btn-copy-report" onclick="copyReport()">Copier le rapport</button>
-          <span class="cmd-copied" id="copied-report" style="color: var(--color-success); opacity: 0; transition: opacity 0.3s; font-weight: bold; margin-left: 10px;">Copié !</span>
+          <span class="cmd-copied" id="copied-report" style="color: var(--color-success); opacity: 0; transition: opacity 0.3s; font-weight: bold; margin-left: 10px;">Copi&eacute; !</span>
         </div>
 
         <div class="nav-btns" style="margin-top: 20px;">
-          <button class="btn-prev" onclick="wizard.goStep(4)">&larr; Précédent</button>
+          <button class="btn-prev" onclick="wizard.goStep(4)">&larr; Pr&eacute;c&eacute;dent</button>
           <button class="btn-restart" onclick="wizard.restart()">Recommencer</button>
         </div>
       </div>
@@ -259,7 +269,7 @@
   </div>
 
   <footer>
-    <p>Aucune donnée n'est envoyée &mdash; tout reste dans votre navigateur.</p>
+    <p>Aucune donn&eacute;e n'est envoy&eacute;e &mdash; tout reste dans votre navigateur.</p>
   </footer>
 
   <script src="assets/js/commands.js"></script>
